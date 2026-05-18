@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://kx8crbjyht2d"]
+
+[ext_resource type="Script" uid="uid://bvqske5x5d737" path="res://blade.gd" id="1_jqus2"]
+[ext_resource type="Script" uid="uid://bh4fq7d6j6js1" path="res://blade_manager.gd" id="1_mvwfa"]
+[ext_resource type="Texture2D" uid="uid://jwqxfv1olh6b" path="res://icon.svg" id="3_41okx"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_oisr3"]
+size = Vector2(20, 126)
+
+[node name="BladeManager" type="Node2D" unique_id=1203986755]
+position = Vector2(80, 80)
+script = ExtResource("1_mvwfa")
+
+[node name="Blade" type="Area2D" parent="." unique_id=1620556485]
+position = Vector2(150, 0)
+script = ExtResource("1_jqus2")
+damage = 25
+
+[node name="Sprite2D" type="Sprite2D" parent="Blade" unique_id=1043929469]
+modulate = Color(0.9529412, 1, 1, 1)
+scale = Vector2(0.10156261, 1)
+texture = ExtResource("3_41okx")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Blade" unique_id=876576343]
+position = Vector2(0, 1)
+shape = SubResource("RectangleShape2D_oisr3")

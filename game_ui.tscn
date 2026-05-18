@@ -1,0 +1,81 @@
+[gd_scene format=3 uid="uid://dkkisvmcncwgs"]
+
+[ext_resource type="Script" uid="uid://b46b7n0lpa8ml" path="res://game_ui.gd" id="1_ue6oa"]
+
+[node name="GameUI" type="CanvasLayer" unique_id=1918261479]
+script = ExtResource("1_ue6oa")
+
+[node name="BaseUI" type="Control" parent="." unique_id=1587666560]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 28.0
+offset_top = 1.0
+offset_right = 110.0
+offset_bottom = 91.0
+
+[node name="XPBar" type="ProgressBar" parent="BaseUI" unique_id=1742749662]
+layout_mode = 0
+offset_left = -28.0
+offset_top = 29.0
+offset_right = 22.0
+offset_bottom = 65.0
+
+[node name="HPBar" type="ProgressBar" parent="BaseUI" unique_id=910043918]
+layout_mode = 0
+offset_left = -28.0
+offset_right = 22.0
+offset_bottom = 27.0
+value = 100.0
+
+[node name="LevelLabel" type="Label" parent="BaseUI" unique_id=319384248]
+layout_mode = 0
+offset_left = 26.0
+offset_top = 4.0
+offset_right = 80.0
+offset_bottom = 27.0
+
+[node name="TimeLabel" type="Label" parent="BaseUI" unique_id=311502671]
+layout_mode = 0
+offset_left = 471.0
+offset_top = 1.0
+offset_right = 557.0
+offset_bottom = 24.0
+
+[node name="LevelUpMenu" type="PanelContainer" parent="." unique_id=697103262]
+process_mode = 2
+visible = false
+offset_right = 1152.0
+offset_bottom = 541.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="LevelUpMenu" unique_id=2117878092]
+layout_mode = 2
+
+[node name="MenuTitle" type="Label" parent="LevelUpMenu/VBoxContainer" unique_id=1375994142]
+layout_mode = 2
+
+[node name="Option1" type="Button" parent="LevelUpMenu/VBoxContainer" unique_id=667092694]
+layout_mode = 2
+
+[node name="Option2" type="Button" parent="LevelUpMenu/VBoxContainer" unique_id=233854780]
+layout_mode = 2
+
+[node name="Option3" type="Button" parent="LevelUpMenu/VBoxContainer" unique_id=370968225]
+layout_mode = 2
+
+[node name="ResultMenu" type="PanelContainer" parent="." unique_id=1234351635]
+process_mode = 3
+visible = false
+offset_right = 1150.0
+offset_bottom = 564.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ResultMenu" unique_id=1919783444]
+layout_mode = 2
+
+[node name="ResultTitle" type="Label" parent="ResultMenu/VBoxContainer" unique_id=389739298]
+layout_mode = 2
+
+[node name="ResultDetail" type="Label" parent="ResultMenu/VBoxContainer" unique_id=92301853]
+layout_mode = 2
+
+[node name="RestartButton" type="Button" parent="ResultMenu/VBoxContainer" unique_id=1946495320]
+layout_mode = 2

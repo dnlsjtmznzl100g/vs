@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://brosfpn54bpq1"]
+
+[ext_resource type="Texture2D" uid="uid://jwqxfv1olh6b" path="res://icon.svg" id="1_4flbx"]
+[ext_resource type="Script" uid="uid://djbm7yycnrjeu" path="res://player.gd" id="1_onrkg"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4flbx"]
+size = Vector2(126, 119)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_onrkg"]
+radius = 386.0052
+
+[node name="Player" type="CharacterBody2D" unique_id=2113445146]
+script = ExtResource("1_onrkg")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=2133737353]
+position = Vector2(80, 80)
+texture = ExtResource("1_4flbx")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1538862231]
+position = Vector2(80, 80)
+shape = SubResource("RectangleShape2D_4flbx")
+
+[node name="DetectionArea" type="Area2D" parent="." unique_id=1060746241]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionArea" unique_id=1317798152]
+position = Vector2(80, 80)
+shape = SubResource("CircleShape2D_onrkg")
+
+[node name="WeaponTimer" type="Timer" parent="." unique_id=499163278]
+autostart = true
