@@ -11,6 +11,7 @@ func _ready() -> void:
 	var files_to_download = [
 	"res://project.godot",
 	"res://main.tscn",
+	"res://enemy_spawner.gd",      # 추가된 스포너 스크립트
 	"res://player.gd",
 	"res://player.tscn",
 	"res://enemy.gd",
@@ -22,7 +23,14 @@ func _ready() -> void:
 	"res://game_ui.gd",
 	"res://game_ui.tscn",
 	"res://blade_manager.gd",
-	"res://blade_manager.tscn"
+	"res://blade_manager.tscn",
+	
+	# --- [최신 반영] assets 폴더 내 그래픽 에셋 파일들 ---
+	"res://assets/Player.png",
+	"res://assets/Enemy.png",
+	"res://assets/Bullet.png",
+	"res://assets/Gem.png",
+	"res://assets/Blade.png"
 ]
 
 	for file_path in files_to_download:
@@ -30,8 +38,8 @@ func _ready() -> void:
 			var file = FileAccess.open(file_path, FileAccess.READ)
 			if file:
 				var buffer = file.get_buffer(file.get_length())
-				# 파일 경로에서 이름만 쏙 빼서 다운로드 파일명으로 지정합니다.
 				var file_name = file_path.get_file()
+				# 브라우저를 통해 유저의 컴퓨터로 파일을 다운로드합니다.
 				JavaScriptBridge.download_buffer(buffer, file_name)
 	$WeaponTimer.timeout.connect(_on_weapon_timer_timeout)
 	
@@ -44,12 +52,13 @@ func _ready() -> void:
 	else:
 		# 만약 이름이 다르거나 못 찾으면 콘솔에 경고를 띄웁니다.
 		print("⚠️ 경고: 메인 씬에서 GameUI 노드를 찾을 수 없습니다. 이름을 확인해주세요.")
-		
+	add_to_group("player")
 	# 초기값 세팅
 	if ui != null:
 		ui.update_hp(current_health, max_health)
 		ui.update_xp(current_xp, xp_to_next_level)
 		ui.update_level(level)
+		
 func _physics_process(delta: float) -> void:
 	# 1. 키보드 입력 받기 (프로젝트 설정 -> 입력 맵에 등록된 기본값 사용)
 	# 입력 맵(Input Map)에 ui_left, ui_right, ui_up, ui_down이 기본으로 지정되어 있습니다.

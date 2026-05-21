@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://clfjrvlttp5ai"]
 
 [ext_resource type="PackedScene" uid="uid://brosfpn54bpq1" path="res://player.tscn" id="1_0xm2m"]
-[ext_resource type="Script" uid="uid://dje7xmfexheyi" path="res://enemy_spawner.gd" id="2_0xm2m"]
+[ext_resource type="Script" uid="uid://brrthmqysi0k5" path="res://enemy_spawner.gd" id="2_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://dkkisvmcncwgs" path="res://game_ui.tscn" id="3_h2yge"]
 
 [node name="Main" type="Node2D" unique_id=764402422]
@@ -13,7 +13,7 @@ position = Vector2(7, 8)
 script = ExtResource("2_0xm2m")
 
 [node name="SpawnTimer" type="Timer" parent="EnemySpawner" unique_id=1407797832]
-wait_time = 1.0999999999999999
+wait_time = 2.0
 autostart = true
 
 [node name="GameUI" parent="." unique_id=1918261479 instance=ExtResource("3_h2yge")]

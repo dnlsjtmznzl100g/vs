@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://brosfpn54bpq1"]
 
-[ext_resource type="Texture2D" uid="uid://jwqxfv1olh6b" path="res://icon.svg" id="1_4flbx"]
-[ext_resource type="Script" uid="uid://djbm7yycnrjeu" path="res://player.gd" id="1_onrkg"]
+[ext_resource type="Script" uid="uid://boysxfd6b5vie" path="res://player.gd" id="1_onrkg"]
+[ext_resource type="Texture2D" uid="uid://b3etv0u7hlxqk" path="res://assets/Player.png" id="2_onrkg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4flbx"]
-size = Vector2(126, 119)
+size = Vector2(73.99999, 64)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_onrkg"]
 radius = 386.0052
@@ -13,18 +13,19 @@ radius = 386.0052
 script = ExtResource("1_onrkg")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=2133737353]
-position = Vector2(80, 80)
-texture = ExtResource("1_4flbx")
+scale = Vector2(3.9687502, 3.7499998)
+texture = ExtResource("2_onrkg")
+hframes = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1538862231]
-position = Vector2(80, 80)
 shape = SubResource("RectangleShape2D_4flbx")
 
 [node name="DetectionArea" type="Area2D" parent="." unique_id=1060746241]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionArea" unique_id=1317798152]
-position = Vector2(80, 80)
 shape = SubResource("CircleShape2D_onrkg")
 
 [node name="WeaponTimer" type="Timer" parent="." unique_id=499163278]
 autostart = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1632763044]
