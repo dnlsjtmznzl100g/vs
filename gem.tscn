@@ -1,12 +1,13 @@
 [gd_scene format=3 uid="uid://b1gsgdupnr35p"]
 
 [ext_resource type="Script" uid="uid://b2gd5hqf7hw24" path="res://gem.gd" id="1_edvqy"]
-[ext_resource type="Texture2D" uid="uid://dp7xyl7lrhjfq" path="res://assets/Gem.png" id="2_edvqy"]
+[ext_resource type="Texture2D" uid="uid://css73tdgot8v8" path="res://Gem.png" id="2_edvqy"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_whk3i"]
 size = Vector2(27, 20)
 
 [node name="Gem" type="Area2D" unique_id=558451409]
+collision_layer = 4
 script = ExtResource("1_edvqy")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=456021373]

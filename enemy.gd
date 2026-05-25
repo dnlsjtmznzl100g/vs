@@ -1,6 +1,7 @@
 extends CharacterBody2D
 
 @export var speed: float = 80.0
+@export var max_hp: int = 50
 @export var health: int = 50
 @export var damage: int = 10
 
@@ -35,6 +36,18 @@ func _physics_process(delta: float) -> void:
 		# 플레이어와 닿아있다면 데미지를 주기 위한 체크
 		check_player_collision()
 
+func _notification(what: int) -> void:
+	# 게임 전체가 일시정지(Paused) 상태로 진입하는 순간을 감지합니다.
+	if what == NOTIFICATION_PAUSED:
+		# 물리 이동 속도를 완전히 제로로 만들어 플레이어를 밀어내지 못하게 합니다.
+		velocity = Vector2.ZERO
+		
+	# 레벨업 창이 닫히고 게임이 재개(Unpaused)되는 순간을 감지합니다.
+	elif what == NOTIFICATION_UNPAUSED:
+		# 필요하다면 여기서 플레이어 방향을 다시 계산하도록 AI 타이머를 깨우거나
+		# 조작을 초기화할 수 있습니다. (기본적으론 velocity만 초기화해도 충분합니다.)
+		pass
+		
 # 플레이어와 물리적으로 부딪혔을 때 데미지를 주는 로직
 func check_player_collision() -> void:
 	# move_and_slide() 이후 발생한 모든 충돌 정보를 확인
@@ -61,7 +74,7 @@ func take_damage(amount: int) -> void:
 
 @export var gem_scene: PackedScene = preload("res://gem.tscn") # 보석 씬 경로 확인!
 
-# 기존 die() 함수를 아래와 같이 수정
+
 func die() -> void:
 	# 죽기 전에 보석 생성
 	if gem_scene != null:
@@ -69,4 +82,7 @@ func die() -> void:
 		gem.global_position = global_position
 		get_tree().current_scene.call_deferred("add_child", gem) # 안전하게 씬에 추가
 		
-	queue_free()
+	if get_node_or_null("/root/ObjectPooler"): # Autoload 확인
+		get_node("/root/ObjectPooler").return_enemy(self)
+	else:
+		queue_free()

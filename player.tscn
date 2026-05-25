@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://brosfpn54bpq1"]
 
-[ext_resource type="Script" uid="uid://boysxfd6b5vie" path="res://player.gd" id="1_onrkg"]
-[ext_resource type="Texture2D" uid="uid://b3etv0u7hlxqk" path="res://assets/Player.png" id="2_onrkg"]
+[ext_resource type="Script" uid="uid://cuihku6ly0nxa" path="res://player.gd" id="1_onrkg"]
+[ext_resource type="Texture2D" uid="uid://bg2ivpxowyfx7" path="res://Player.png" id="2_onrkg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4flbx"]
 size = Vector2(73.99999, 64)
@@ -29,3 +29,7 @@ shape = SubResource("CircleShape2D_onrkg")
 autostart = true
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1632763044]
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=439679672]
+position_smoothing_enabled = true
+position_smoothing_speed = 6.0

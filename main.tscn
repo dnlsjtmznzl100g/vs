@@ -1,10 +1,14 @@
 [gd_scene format=3 uid="uid://clfjrvlttp5ai"]
 
 [ext_resource type="PackedScene" uid="uid://brosfpn54bpq1" path="res://player.tscn" id="1_0xm2m"]
-[ext_resource type="Script" uid="uid://brrthmqysi0k5" path="res://enemy_spawner.gd" id="2_0xm2m"]
+[ext_resource type="Script" uid="uid://bk63sfyqpysn5" path="res://infinite_background.gd" id="1_1bvp3"]
+[ext_resource type="Script" uid="uid://cwajyvnjavw" path="res://enemy_spawner.gd" id="2_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://dkkisvmcncwgs" path="res://game_ui.tscn" id="3_h2yge"]
 
 [node name="Main" type="Node2D" unique_id=764402422]
+
+[node name="InfiniteBackground" type="Node2D" parent="." unique_id=1382873802]
+script = ExtResource("1_1bvp3")
 
 [node name="Player" parent="." unique_id=2113445146 instance=ExtResource("1_0xm2m")]
 position = Vector2(7, 8)
