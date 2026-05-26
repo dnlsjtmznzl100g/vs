@@ -1,88 +1,109 @@
 extends CharacterBody2D
 
-@export var speed: float = 80.0
-@export var max_hp: int = 50
-@export var health: int = 50
+@export_group("능력치 세팅")
+@export var max_hp: int = 20
+@export var speed: float = 120.0
 @export var damage: int = 10
 
+@export_group("드롭 아이템")
+@export var gem_scene: PackedScene = preload("res://gem.tscn")
+
+var health: int = max_hp
+var is_dead: bool = false
 var player: CharacterBody2D = null
 
 func _ready() -> void:
-	# 중요! 2단계 무기 시스템이 인식할 수 있도록 "enemy" 그룹에 추가합니다.
 	add_to_group("enemy")
-	
-	# 플레이어 찾기 ("player" 그룹에 속한 첫 번째 노드를 가져옵니다)
-	var players = get_tree().get_nodes_in_group("player")
-	if players.size() > 0:
-		player = players[0]
+	_find_player()
+var attack_cooldown: float = 0.0 # 공격 쿨타임 타이머
 
 func _physics_process(delta: float) -> void:
-	if player != null:
-		# 플레이어가 있는 방향 계산
-		var direction = (player.global_position - global_position).normalized()
-		
-		# 플레이어를 향해 이동 속도 설정
-		velocity = direction * speed
-		
-		# 좌우 방향에 따라 스프라이트 반전
-		if direction.x < 0:
-			$Sprite2D.flip_h = true
-		elif direction.x > 0:
-			$Sprite2D.flip_h = false
-			
-		# 이동 및 충돌 처리
-		move_and_slide()
-		
-		# 플레이어와 닿아있다면 데미지를 주기 위한 체크
-		check_player_collision()
-
-func _notification(what: int) -> void:
-	# 게임 전체가 일시정지(Paused) 상태로 진입하는 순간을 감지합니다.
-	if what == NOTIFICATION_PAUSED:
-		# 물리 이동 속도를 완전히 제로로 만들어 플레이어를 밀어내지 못하게 합니다.
+	if is_dead or not is_instance_valid(player):
 		velocity = Vector2.ZERO
-		
-	# 레벨업 창이 닫히고 게임이 재개(Unpaused)되는 순간을 감지합니다.
-	elif what == NOTIFICATION_UNPAUSED:
-		# 필요하다면 여기서 플레이어 방향을 다시 계산하도록 AI 타이머를 깨우거나
-		# 조작을 초기화할 수 있습니다. (기본적으론 velocity만 초기화해도 충분합니다.)
-		pass
-		
-# 플레이어와 물리적으로 부딪혔을 때 데미지를 주는 로직
-func check_player_collision() -> void:
-	# move_and_slide() 이후 발생한 모든 충돌 정보를 확인
-	for i in get_slide_collision_count():
+		move_and_slide()
+		return
+
+	# [추가] 매 프레임 쿨타임 차감
+	if attack_cooldown > 0:
+		attack_cooldown -= delta
+
+	var direction = (player.global_position - global_position).normalized()
+	velocity = direction * speed
+	
+	if direction.x < 0:
+		$Sprite2D.flip_h = true
+	elif direction.x > 0:
+		$Sprite2D.flip_h = false
+
+	move_and_slide()
+	
+	# 쿨타임이 0 이하일 때만 플레이어 타격 체크
+	if attack_cooldown <= 0:
+		_check_player_collision()
+
+func _check_player_collision() -> void:
+	for i in range(get_slide_collision_count()):
 		var collision = get_slide_collision(i)
 		var collider = collision.get_collider()
 		
-		# 부딪힌 대상이 플레이어라면 데미지 함수 호출
-		if collider.is_in_group("player") and collider.has_method("take_damage"):
-			collider.take_damage(damage)
-			# 뱀서류는 보통 닿자마자 적이 사라지지 않고 지속 데미지를 주지만, 
-			# 기초 단계이므로 우선 한 번 부딪히면 적이 사라지게 처리합니다.
-			queue_free() 
+		if is_instance_valid(collider) and collider.is_in_group("player"):
+			if collider.has_method("take_damage"):
+				collider.take_damage(damage)
+				# [★ 핵심 ★] 한 번 때렸으므로 1초 동안 공격 봉인 (원하는 쿨타임 초 설정)
+				attack_cooldown = 1.0 
+				break # 한 프레임에 여러 번 때리는 것 방지
 
-# 2단계의 총알 스크립트가 호출할 함수
+# 데미지를 받을 때 호출되는 함수
 func take_damage(amount: int) -> void:
+	if is_dead: return
+	
 	health -= amount
-	print("적 체력: ", health)
-	
-	# 데미지 받았을 때 깜빡이는 연출 등을 여기에 넣으면 좋습니다.
-	
 	if health <= 0:
 		die()
 
-@export var gem_scene: PackedScene = preload("res://gem.tscn") # 보석 씬 경로 확인!
-
-
+# ★ 순간이동 버그를 원천 차단하는 사망 로직 ★
 func die() -> void:
-	# 죽기 전에 보석 생성
+	if is_dead: return
+	is_dead = true
+	
+	# [버그 해결 핵심] 풀러의 격리 좌표(-99999, -99999)로 날아가기 전,
+	# 현재 프레임에서 즉시 물리 레이어 장부를 파괴합니다.
+	# 이렇게 해야 찰나의 순간에 플레이어를 튕겨내는 물리 버그가 발생하지 않습니다.
+	collision_layer = 0
+	collision_mask = 0
+	$CollisionShape2D.set_deferred("disabled", true)
+	
+	# 사망 위치에 보석(경험치) 드롭
 	if gem_scene != null:
 		var gem = gem_scene.instantiate()
 		gem.global_position = global_position
-		get_tree().current_scene.call_deferred("add_child", gem) # 안전하게 씬에 추가
+		# 메인 씬 트리에 안전하게 추가
+		get_tree().current_scene.call_deferred("add_child", gem)
 		
-	if get_node_or_null("/root/ObjectPooler"): # Autoload 확인
+	# 오브젝트 풀러로 반납 처리
+	if get_node_or_null("/root/ObjectPooler"):
 		get_node("/root/ObjectPooler").return_enemy(self)
 	else:
+		# 혹시 풀러가 없는 독립 테스트 상황이라면 메모리 해제
 		queue_free()
+
+# ★ 오브젝트 풀에서 다시 꺼내질 때 호출되는 초기화 함수 ★
+func reset_enemy() -> void:
+	# 1. 능력치 및 플래그 초기화
+	health = max_hp
+	is_dead = false
+	visible = true
+	
+	# 2. [물리 레이어 완벽 복구] 
+	# Layer 2 (Enemy), Mask 1 (Player 본체 감지 및 밀치기)
+	collision_layer = 2
+	collision_mask = 1
+	$CollisionShape2D.set_deferred("disabled", false)
+	
+	# 3. 프로세스 재가동 및 플레이어 재탐색
+	set_physics_process(true)
+	_find_player()
+
+func _find_player() -> void:
+	var players = get_tree().get_nodes_in_group("player")
+	player = players[0] if players.size() > 0 else null

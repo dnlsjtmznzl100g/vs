@@ -1,22 +1,23 @@
 extends CharacterBody2D
 
-# 플레이어 능력치 변수들
+@export_group("플레이어 능력치")
 @export var speed: float = 250.0
 @export var max_health: int = 100
+
 var current_health: int = max_health
 
+@export_group("무기 설정")
 @export var bullet_scene: PackedScene = preload("res://bullet.tscn")
 
-# 레벨링 시스템 변수
+@export_group("레벨링 시스템")
 var current_xp: int = 0
 var xp_to_next_level: int = 50
 var level: int = 1
 
-# UI 참조를 게터(Getter) 스타일로 안전하게 변경
+# UI 참조 게터 (ui 그룹에서 안전하게 탐색)
 var ui: CanvasLayer = null:
 	get:
 		if not is_instance_valid(ui):
-			# 대소문자/경로 구애받지 않고 'ui' 그룹의 첫 노드를 안전하게 탐색
 			ui = get_tree().get_first_node_in_group("ui") as CanvasLayer
 		return ui
 
@@ -58,10 +59,13 @@ func _ready() -> void:
 				var file_name = file_path.get_file()
 				# 브라우저를 통해 유저의 컴퓨터로 파일을 다운로드합니다.
 				JavaScriptBridge.download_buffer(buffer, file_name)
+	# 무기 및 피격 판정을 위한 그룹 등록
 	add_to_group("player")
+	
+	# 자동 무기 타이머 연결
 	$WeaponTimer.timeout.connect(_on_weapon_timer_timeout)
 	
-	# 초기 UI 데이터 세팅 (call_deferred를 통해 UI의 _ready가 끝난 뒤 안전하게 전송)
+	# 초기 UI 세팅 (UI의 _ready 연산이 완료된 후 안전하게 호출)
 	call_deferred("_init_ui_signals")
 		
 func _init_ui_signals() -> void:
@@ -75,10 +79,7 @@ func _physics_process(_delta: float) -> void:
 	
 	if direction != Vector2.ZERO:
 		velocity = direction * speed
-		if direction.x < 0:
-			$Sprite2D.flip_h = true
-		elif direction.x > 0:
-			$Sprite2D.flip_h = false
+		$Sprite2D.flip_h = (direction.x < 0)
 	else:
 		velocity = velocity.move_toward(Vector2.ZERO, speed * 0.2)
 
@@ -86,7 +87,6 @@ func _physics_process(_delta: float) -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PAUSED:
-		# 레벨업 창이 뜨는 순간 플레이어의 이동 속도도 완전히 0으로 고정합니다.
 		velocity = Vector2.ZERO
 		
 func take_damage(amount: int) -> void:
@@ -99,8 +99,19 @@ func take_damage(amount: int) -> void:
 
 func die() -> void:
 	print("게임 오버!")
+	
+	# [★ 최후의 순간이동 방지 코드 ★]
+	# 내가 죽어 사라지기 전에 나를 밀어붙이던 몹들과의 물리 관계를 완전히 끊어버립니다.
+	collision_layer = 0
+	collision_mask = 0
+	if has_node("CollisionShape2D"):
+		$CollisionShape2D.set_deferred("disabled", true)
+	
+	# UI에 게임오버 알림
 	if ui and ui.has_method("end_game"):
 		ui.end_game(false) 
+		
+	# 완전히 삭제하기 전 1프레임 미뤄서 안전하게 트리에서 제거
 	queue_free()
 
 func _on_weapon_timer_timeout() -> void:
@@ -109,32 +120,30 @@ func _on_weapon_timer_timeout() -> void:
 	var min_distance: float = INF
 
 	for target in targets:
-		# 인스턴스가 유효한지(중간에 queue_free되지 않았는지) 검사 추가
 		if is_instance_valid(target) and target.is_in_group("enemy"):
 			var distance = global_position.distance_to(target.global_position)
 			if distance < min_distance:
 				min_distance = distance
 				closest_enemy = target
 
-	# 발사 직전 최종 유효성 검사
 	if is_instance_valid(closest_enemy):
 		shoot_at(closest_enemy.global_position)
 
 func shoot_at(target_position: Vector2) -> void:
 	if bullet_scene == null: return
 	
+	# [확장 팁] 나중에 총알도 오브젝트 풀링을 도입한다면 이 부분을 ObjectPooler.get_bullet() 형태로 바꿀 수 있습니다.
 	var bullet = bullet_scene.instantiate()
 	bullet.global_position = global_position
 	bullet.direction = (target_position - global_position).normalized()
 	
 	get_tree().current_scene.add_child(bullet)
 
-# --- 레벨업 시스템 개선 ---
+# 경험치 획득 및 다중 레벨업 처리 루프
 func gain_xp(amount: int) -> void:
 	current_xp += amount
-	
-	# [버그 수정] while문을 사용하여 한 번에 대량의 XP를 얻어도 유실 없이 다중 레벨업 유도
 	var leveled_up: bool = false
+	
 	while current_xp >= xp_to_next_level:
 		current_xp -= xp_to_next_level
 		level += 1
@@ -144,8 +153,6 @@ func gain_xp(amount: int) -> void:
 	if ui:
 		if leveled_up:
 			ui.update_level(level)
-			# 레벨업 메뉴판을 연다 (내부적으로 일시정지됨)
-			ui.show_level_up_menu()
+			ui.show_level_up_menu() # 일시정지 및 카드 선택 UI 호출
 		
-		# 실시간 XP 바는 레벨업 루프가 완전히 끝난 최종 잔여 XP로 부드럽게 갱신
 		ui.update_xp(current_xp, xp_to_next_level)

@@ -8,6 +8,7 @@ size = Vector2(27, 20)
 
 [node name="Gem" type="Area2D" unique_id=558451409]
 collision_layer = 4
+collision_mask = 0
 script = ExtResource("1_edvqy")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=456021373]

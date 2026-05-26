@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://brosfpn54bpq1"]
 
-[ext_resource type="Script" uid="uid://cuihku6ly0nxa" path="res://player.gd" id="1_onrkg"]
+[ext_resource type="Script" uid="uid://fw0qcabrt3bs" path="res://player.gd" id="1_onrkg"]
 [ext_resource type="Texture2D" uid="uid://bg2ivpxowyfx7" path="res://Player.png" id="2_onrkg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4flbx"]
@@ -10,6 +10,7 @@ size = Vector2(73.99999, 64)
 radius = 386.0052
 
 [node name="Player" type="CharacterBody2D" unique_id=2113445146]
+collision_mask = 0
 script = ExtResource("1_onrkg")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=2133737353]
@@ -21,6 +22,7 @@ hframes = 2
 shape = SubResource("RectangleShape2D_4flbx")
 
 [node name="DetectionArea" type="Area2D" parent="." unique_id=1060746241]
+collision_mask = 6
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionArea" unique_id=1317798152]
 shape = SubResource("CircleShape2D_onrkg")
