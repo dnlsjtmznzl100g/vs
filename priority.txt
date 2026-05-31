@@ -15,6 +15,14 @@ DetectionArea 의존도 감소
 [4]
 업그레이드 데이터 일반화
 ★★★★☆
+_on_item_selected()
+ └ _apply_upgrade()
+
+_apply_upgrade()
+ ├ blade 처리
+ ├ gun 처리
+ ├ hp 처리
+ └ speed 처리
 
 [5]
 진화 시스템 리소스화
