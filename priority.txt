@@ -12,7 +12,7 @@ Spawn Ring
 DetectionArea 의존도 감소
 ★★★★☆
 
-[4]
+[4] (완)
 업그레이드 데이터 일반화
 ★★★★☆
 _on_item_selected()
@@ -24,10 +24,50 @@ _apply_upgrade()
  ├ hp 처리
  └ speed 처리
 
-[5]
+[5] (완)
 진화 시스템 리소스화
+★★★★☆
+진화 조건을 코드(if blade==5 && hp==5)에 하드코딩하지 않고, evolution_db(나중에는 .tres) 데이터로 관리하여 새 진화를 데이터 추가만으로 확장 가능하게 만드는 작업입니다.
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+[콘텐츠 우선순위]
+[1]
+ItemResource
+★★★★★
+resources/
+
+item_data_resource.gd
+
+items/
+ ├ blade.tres
+ ├ gun.tres
+ ├ hp.tres
+ └ speed.tres
+
+[2]
+EvolutionResource
+★★★★★
+
+[3]
+엘리트 몬스터
+★★★★★
+
+[4]
+보스
+★★★★☆
+
+[5]
+상자 시스템
 ★★★★☆
 
 [6]
-Gem Merge
+WeaponBase 구조
+★★★★☆
+
+[7]
+PlayerStats
+★★★☆☆
+
+[8]
+WaveResource
 ★★★☆☆
