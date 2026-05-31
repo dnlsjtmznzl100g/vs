@@ -60,10 +60,12 @@ func get_enemy() -> Node2D:
 			# [★ 버그 해결의 핵심 ★] 꺼내기 직전 enemy 내부의 HP, 플래그, 물리 레이어를 리셋
 			if enemy.has_method("reset_enemy"):
 				enemy.reset_enemy()
-			
-			# 게임의 일시정지(Pause) 규칙을 따르도록 설정 후 활성화
+
 			enemy.process_mode = Node.PROCESS_MODE_PAUSABLE
 			enemy.visible = true
+
+			EnemyManager.register_enemy(enemy)
+
 			return enemy
 			
 	# 예외 처리: 300마리가 모두 출격하여 풀이 부족할 때 동적 신규 생성
@@ -76,10 +78,13 @@ func get_enemy() -> Node2D:
 		new_enemy.reset_enemy()
 		
 	new_enemy.process_mode = Node.PROCESS_MODE_PAUSABLE
+	EnemyManager.register_enemy(new_enemy)
 	return new_enemy
 
 func return_enemy(enemy: Node2D) -> void:
 	if is_instance_valid(enemy):
+		EnemyManager.register_enemy(enemy)
+		
 		# 반납 즉시 격리 구역으로 순간이동시켜 플레이어와의 물리적 마찰을 원천 차단
 		enemy.global_position = QUARANTINE_POSITION
 		enemy.visible = false

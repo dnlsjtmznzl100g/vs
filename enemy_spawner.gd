@@ -2,7 +2,8 @@ extends Node2D
 
 @export_group("스폰 설정")
 @export var enemy_scene: PackedScene = preload("res://enemy.tscn")
-@export var spawn_radius: float = 750.0
+@export var min_spawn_radius: float = 700.0
+@export var max_spawn_radius: float = 1000.0
 
 @export_group("난이도 조절")
 @export var base_spawn_interval: float = 2.0  # 시작 스폰 주기 (초)
@@ -53,7 +54,10 @@ func spawn_enemy_outside_screen() -> void:
 	# 1. 외곽 원형 좌표 연산부터 먼저 수행
 	var random_angle = randf_range(0, 2 * PI)
 	var spawn_direction = Vector2(cos(random_angle), sin(random_angle))
-	var final_radius = spawn_radius + randf_range(-50.0, 50.0)
+	var final_radius = randf_range(
+		min_spawn_radius,
+		max_spawn_radius
+	)
 
 	# 2. 트리에 붙이기 '전에' 위치를 좌표로 미리 강제 지정!
 	enemy.global_position = player.global_position + (spawn_direction * final_radius)
@@ -63,8 +67,6 @@ func spawn_enemy_outside_screen() -> void:
 		get_parent().add_child(enemy)
 
 	enemy.force_update_transform()
-	if enemy.has_method("reset_enemy"):
-		enemy.reset_enemy()
 
 func _find_player() -> void:
 	var players = get_tree().get_nodes_in_group("player")

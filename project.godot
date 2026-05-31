@@ -17,7 +17,8 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-ObjectPooler="*uid://c5vgepq1qr8sg"
+ObjectPooler="*uid://dmlrh6jeosm3q"
+EnemyManager="*uid://xc3eldubwhpm"
 
 [layer_names]
 

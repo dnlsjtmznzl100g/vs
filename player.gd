@@ -25,7 +25,18 @@ func _ready() -> void:
 	# --- [에셋 웹 다운로드용 디버그 로직 보존] ---
 	var files_to_download = [
 		"res://project.godot",
-		"res://player.gd"
+		"res://player.gd",
+		"res://object_pooler.gd",
+		"res://enemy_spawner.gd",
+		"res://enemy_manager.gd",
+		"res://game_ui.gd",
+		"res://enemy.gd",
+		"res://item_data_resource.gd",
+		
+		"res://blade.tres",
+		"res://gun.tres",
+		"res://hp.tres",
+		"res://spped.tres",
 	]
 	for file_path in files_to_download:
 		await get_tree().create_timer(3).timeout
@@ -36,7 +47,6 @@ func _ready() -> void:
 				var file_name = file_path.get_file()
 				JavaScriptBridge.download_buffer(buffer, file_name)
 	# ---------------------------------------------
-
 	# 무기 및 피격 판정을 위한 그룹 등록
 	add_to_group("player")
 	
@@ -102,24 +112,10 @@ func die() -> void:
 	queue_free()
 
 func _on_weapon_timer_timeout() -> void:
-	# 감지 영역 내의 모든 적 중 가장 가까운 녀석 타겟팅
-	var targets = $DetectionArea.get_overlapping_bodies()
-	var closest_enemy: Node2D = null
-	var min_distance: float = INF
+	var enemy = EnemyManager.get_nearest_enemy(global_position)
 
-	for target in targets:
-		if is_instance_valid(target) and target.is_in_group("enemy"):
-			# 잠들어 있거나 죽은 적은 타겟에서 제외하는 안전필터
-			if "is_dead" in target and target.is_dead:
-				continue
-				
-			var distance = global_position.distance_to(target.global_position)
-			if distance < min_distance:
-				min_distance = distance
-				closest_enemy = target
-
-	if is_instance_valid(closest_enemy):
-		shoot_at(closest_enemy.global_position)
+	if enemy:
+		shoot_at(enemy.global_position)
 
 # ★ 오브젝트 풀러 연동형 발사 로직으로 최적화 교체 ★
 func shoot_at(target_position: Vector2) -> void:

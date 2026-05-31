@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+@export var item_resources: Array[ItemDataResource]
+
 # --- 1. UI 노드 참조 ---
 @onready var xp_bar: ProgressBar = $BaseUI/XPBar
 @onready var hp_bar: ProgressBar = $BaseUI/HPBar
@@ -21,7 +23,7 @@ extends CanvasLayer
 
 var time_elapsed: float = 0.0
 var game_ended: bool = false
-var is_blade_evolved: bool = false # 진화 중복 방지 플래그
+var unlocked_evolutions = {}
 
 # [개선] 안전한 플레이어 참조 게터 (Getter)
 var player_ref: CharacterBody2D:
@@ -42,26 +44,43 @@ var item_db = {
 	WP_BLADE: {
 		"name": "궤도 칼날",
 		"type": "weapon",
+		"effect_type": "blade",
 		"max_level": 5,
 		"descriptions": ["주변을 도는 칼날을 소환합니다.", "회전 속도가 50% 빨라집니다.", "회전 속도가 50% 빨라집니다.", "회전 속도가 50% 빨라집니다.", "회전 속도가 50% 빨라집니다."]
 	},
 	WP_GUN: {
 		"name": "자동 권총",
 		"type": "weapon",
+		"effect_type": "gun_rate",
 		"max_level": 5,
 		"descriptions": ["가까운 적에게 총알을 쏩니다.", "연사 속도가 증가합니다.", "연사 속도가 증가합니다.", "연사 속도가 증가합니다.", "연사 속도가 증가합니다."]
 	},
 	PS_HP: {
 		"name": "체력 증강",
 		"type": "passive",
+		"effect_type": "hp",
 		"max_level": 5,
 		"descriptions": ["최대 체력이 20 증가합니다."] # 레벨 공통 혹은 최대 레벨까지만
 	},
 	PS_SPEED: {
 		"name": "가벼운 발걸음",
 		"type": "passive",
+		"effect_type": "speed",
 		"max_level": 5,
 		"descriptions": ["이동 속도가 30 증가합니다."]
+	}
+}
+
+var evolution_db = {
+
+	"blood_blade": {
+
+		"name": "피의 칼날 폭풍",
+
+		"requirements": {
+			WP_BLADE: 5,
+			PS_HP: 5
+		}
 	}
 }
 
@@ -69,6 +88,16 @@ var player_inventory = {}
 
 # --- 4. 라이프사이클 함수 ---
 func _ready() -> void:
+	print("resource count = ", item_resources.size())
+
+	for item in item_resources:
+		print(item.item_id)
+	
+	for item in item_resources:
+		item_db[item.item_id] = item
+
+	print(item_db.keys())
+
 	add_to_group("ui")
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
@@ -142,48 +171,52 @@ func setup_option_button(button: Button, options: Array, index: int) -> void:
 		button.pressed.disconnect(_on_item_selected)
 	button.pressed.connect(_on_item_selected.bind(item_id))
 
+func _check_evolutions() -> void:
+
+	for evo_id in evolution_db.keys():
+
+		if unlocked_evolutions.has(evo_id):
+			continue
+
+		var evo_data = evolution_db[evo_id]
+		var requirements = evo_data["requirements"]
+
+		var can_evolve = true
+
+		for item_id in requirements.keys():
+
+			var required_level = requirements[item_id]
+
+			if player_inventory.get(item_id, 0) < required_level:
+
+				can_evolve = false
+				break
+
+		if can_evolve:
+
+			unlocked_evolutions[evo_id] = true
+			trigger_evolution(evo_id)
+			
 func _on_item_selected(item_id: String) -> void:
 	if player_ref == null: return # 게터를 통해 안전하게 검사됨
 	
 	player_inventory[item_id] = player_inventory.get(item_id, 0) + 1
 	var current_lvl = player_inventory[item_id]
 	
-	match item_id:
-		WP_BLADE:
-			if current_lvl == 1:
-				if blade_scene != null:
-					var new_blade = blade_scene.instantiate()
-					new_blade.name = "BladeManager" 
-					player_ref.add_child(new_blade)
-			else:
-				var blade_mgr = player_ref.get_node_or_null("BladeManager")
-				if blade_mgr:
-					blade_mgr.rotation_speed += 1.5
-					
-		WP_GUN:
-			var gun_timer = player_ref.get_node_or_null("WeaponTimer")
-			if gun_timer:
-				gun_timer.wait_time = max(0.15, gun_timer.wait_time - 0.15)
-				
-		PS_HP:
-			player_ref.max_health += 20
-			player_ref.current_health += 20
-			update_hp(player_ref.current_health, player_ref.max_health)
-			
-		PS_SPEED:
-			player_ref.speed += 30.0
-
+	var effect_type = item_db[item_id]["effect_type"]
+	_apply_upgrade(effect_type, current_lvl)
 	# [개선] 진화 조건 체크 (중복 방지 플래그 추가)
-	if not is_blade_evolved and player_inventory.get(WP_BLADE, 0) == 5 and player_inventory.get(PS_HP, 0) == 5:
-		is_blade_evolved = true
-		trigger_evolution()
-
+	_check_evolutions()
 	level_up_menu.visible = false
 	get_tree().paused = false
 
-func trigger_evolution() -> void:
-	print("🔥 [조합 성공] 피의 칼날 폭풍으로 무기가 진화합니다! 🔥")
+func trigger_evolution(evo_id: String) -> void:
 
+	match evo_id:
+
+		"blood_blade":
+
+			print("🔥 피의 칼날 폭풍 진화! 🔥")
 # --- 7. 게임 종료 및 리스타트 로직 ---
 func end_game(is_win: bool) -> void:
 	game_ended = true
@@ -204,3 +237,47 @@ func end_game(is_win: bool) -> void:
 func _on_restart_button_pressed() -> void:
 	get_tree().paused = false
 	get_tree().reload_current_scene()
+
+func _apply_upgrade(effect_type: String, level: int) -> void:
+
+	match effect_type:
+
+		"blade":
+
+			if level == 1:
+
+				if blade_scene != null:
+					var new_blade = blade_scene.instantiate()
+					new_blade.name = "BladeManager"
+					player_ref.add_child(new_blade)
+
+			else:
+
+				var blade_mgr = player_ref.get_node_or_null("BladeManager")
+
+				if blade_mgr:
+					blade_mgr.rotation_speed += 1.5
+
+		"gun_rate":
+
+			var gun_timer = player_ref.get_node_or_null("WeaponTimer")
+
+			if gun_timer:
+				gun_timer.wait_time = max(
+					0.15,
+					gun_timer.wait_time - 0.15
+				)
+
+		"hp":
+
+			player_ref.max_health += 20
+			player_ref.current_health += 20
+
+			update_hp(
+				player_ref.current_health,
+				player_ref.max_health
+			)
+
+		"speed":
+
+			player_ref.speed += 30.0
