@@ -1,270 +1,258 @@
 뱀서류 게임 프로토타입 개발 문서 (v1.2)
-1. 프로젝트 개요
+작업 일자
 
-개발 엔진: Godot 4.x
+2026-06-01
 
-장르: 2D 로그라이크 불릿헬 (Vampire Survivors Like)
-
-핵심 루프:
-
-몬스터 스폰 링 생성 → EnemyManager 등록 → 자동 무기 시스템 및 오브젝트 풀 기반 사냥 → 보석(XP) 획득 → 랜덤 3택 레벨업 → 캐릭터 및 무기 강화 → 진화(Evolution)
-
-2. 최근 아키텍처 변경 사항
-완료
-EnemyManager 도입
-Spawn Ring 기반 적 탐색 시스템
-DetectionArea 의존도 감소
-ItemDataResource 기반 데이터 구조 전환 시작
-진행 중
-Item DB → Resource DB 완전 이관
-Evolution Resource 시스템 구축
-보류
-Gem Merge
-Save / Load
-Stage Director
-3. EnemyManager 시스템
+오늘 완료된 작업
+1. EnemyManager 도입 완료
 기존 구조
-
 Player
-└ DetectionArea
-└ get_overlapping_bodies()
+ └ DetectionArea
+     └ get_overlapping_bodies()
+         └ 가장 가까운 적 탐색
 
 문제점
 
-플레이어가 모든 적을 감시
-Area2D 충돌 계산 발생
-적 수 증가 시 성능 저하
-신규 구조
-
+공격할 때마다 DetectionArea 내부 적 전체 순회
+적 수 증가 시 비용 증가
+Player가 Enemy 탐색 책임을 가짐
+변경 구조
 EnemyManager
-├ active_enemies
-└ nearest_enemy()
+ ├ active_enemies
+ ├ register_enemy()
+ ├ unregister_enemy()
+ └ get_nearest_enemy()
 
 Player
-└ EnemyManager에게 최근접 적 질의
+ └ EnemyManager에 질의
 
 장점
 
-Area2D 제거 가능
-적 탐색 중앙화
-향후 공간 분할 적용 가능
-Enemy 등록
+적 탐색 책임 분리
+DetectionArea 의존도 감소
+향후 Spatial Partition 적용 가능
+2. Spawn Ring 적용
+기존 구조
 
-enemy.gd
+EnemySpawner
 
-func reset_enemy():
-EnemyManager.register_enemy(self)
+랜덤 반지름
+랜덤 각도
 
-Enemy 해제
+문제점
 
-enemy.gd
+플레이어 근처 스폰 가능
+화면 안 생성 가능성 존재
+변경 구조
+고정 Spawn Ring
+플레이어
+   ○
+ ○   ○
+○     ○
+ ○   ○
+   ○
 
-func die():
-EnemyManager.unregister_enemy(self)
+특징
 
-Player 타겟 탐색
-
-player.gd
-
-func _on_weapon_timer_timeout():
-var target = EnemyManager.get_nearest_enemy(global_position)
-
-if target:
-    shoot_at(target.global_position)
-4. Spawn Ring 시스템
-목적
-
-플레이어 주변에만 적을 생성하여
-
-탐색 범위 제한
-성능 최적화
-무한맵 대응
-구조
-
-Player
-└ Spawn Ring
-반경 1200px
-
-적 생성 위치
-
-1200px ~ 1400px
-
-적 제거 거리
-
-2000px 이상
+항상 화면 밖 생성
+스폰 거리 일정
+난이도 예측 가능
+3. DetectionArea 의존도 감소
+기존
+var targets =
+	$DetectionArea.get_overlapping_bodies()
+변경
+EnemyManager.get_nearest_enemy(
+	global_position
+)
 
 효과
 
+물리엔진 의존 감소
+탐색 로직 단순화
+4. ItemDataResource 도입
 기존
 
-전체 적 탐색
+game_ui.gd 내부
 
-↓
+var item_db = {
+	...
+}
+
+하드코딩
 
 변경
-
-Spawn Ring 내부 적만 관리
-
-5. DetectionArea 제거 준비
-기존
-
-Player
-└ DetectionArea
-
-근접 적 탐색
-
-신규
-
-EnemyManager
-
-func get_nearest_enemy(position)
-
-사용
-
-기대 효과
-Area2D 제거
-Physics 연산 감소
-적 1000마리 이상 대응 기반 확보
-6. ItemDataResource 시스템
-목적
-
-기존 하드코딩 Dictionary 제거
-
-Resource 정의
-
-item_data_resource.gd
-
+resources/items/
+ ├ blade.tres
+ ├ gun.tres
+ ├ hp.tres
+ └ speed.tres
+ItemDataResource
 extends Resource
 class_name ItemDataResource
 
 @export var item_id: String
 @export var display_name: String
 @export var item_type: String
-@export var effect_type: String
+@export var effect_resource: Resource
 @export var max_level: int = 5
 @export var descriptions: Array[String]
-
-Resource 예시
-
-blade.tres
-
-item_id = "blade"
-display_name = "궤도 칼날"
-item_type = "weapon"
-effect_type = "blade"
-
-GameUI 등록
-
-@export var item_resources: Array[ItemDataResource]
-
-Inspector
-
-Item Resources
-├ blade.tres
-├ gun.tres
-├ hp.tres
-└ speed.tres
-
-Runtime DB 생성
-
-func _ready():
+5. item_db 일반화
+기존
+var item_db = {
+	...
+}
+변경
+var item_db = {}
 
 for item in item_resources:
-    item_db[item.item_id] = item
-향후 제거 예정
+	item_db[item.item_id] = item
 
-var item_db = {
-...
-}
+효과
 
-7. Evolution Resource 시스템 (설계 단계)
-목적
+신규 아이템 추가 시 코드 수정 불필요
+.tres 등록만으로 확장 가능
+6. UpgradeEffectResource 시스템 도입
+신규 베이스 클래스
+extends Resource
+class_name UpgradeEffectResource
 
-하드코딩 제거
+func apply(player, ui, level):
+	pass
+구현 완료
+HPUpgradeEffect
+GunRateUpgradeEffect
+SpeedUpgradeEffect
+기존 구조
+match effect_type:
+	"hp":
+	...
+	"speed":
+	...
+	"gun":
+	...
+변경 구조
+item_info.effect_resource.apply(
+	player_ref,
+	self,
+	current_lvl
+)
+
+효과
+
+match 제거
+Open/Closed Principle 적용
+신규 업그레이드 추가 시 UI 수정 불필요
+7. Blade 업그레이드 Resource화 진행
+목표
+BladeUpgradeEffect
+
+도입
+
+현재 상태
+
+구현 완료
+
+BladeUpgradeEffect.apply()
+
+존재
+
+발견된 문제
+
+레벨업 카드 선택 후
+
+effect_resource = null
+
+출력
+
+원인
+
+현재 Main 씬에 등록된 item_resources가
+
+res://main.tscn::Resource_xxxxx
+
+형태의 내부 Resource를 참조 중
+
+예상 구조
+
+res://resources/items/blade.tres
+
+가 아님
+
+다음 작업
+
+Main Scene
+
+GameUI
+ └ item_resources
+
+재점검
+
+현재 아키텍처 상태
+Player
+  ↓
+EnemyManager
+  ↓
+Enemy
+
+Level Up
+  ↓
+ItemDataResource
+  ↓
+effect_resource
+  ↓
+apply()
+다음 우선순위
+1순위
+
+BladeUpgradeEffect 연결 문제 해결
+
+확인 항목
+
+blade.tres
+ └ effect_resource
+     └ blade_effect.tres
+2순위
+
+EvolutionResource 도입
 
 현재
 
-if blade == 5 and hp == 5:
-trigger_evolution()
+var evolution_db = {}
 
-목표
+하드코딩 제거
 
-evolution_blade.tres
+3순위
 
-required_items
+EnemyDataResource
 
-blade Lv5
-passive_hp Lv5
+slime.tres
+bat.tres
+ghost.tres
 
-result
+적 데이터 리소스화
 
-blood_blade
-최종 구조
+4순위
 
-resources
-
-├ items
-│ ├ blade.tres
-│ ├ gun.tres
-│ └ ...
-│
-└ evolutions
-├ blood_blade.tres
-└ ...
-
-8. 오브젝트 풀링
-Enemy Pool
-
-기본
-
-300
-
-자동 확장 가능
-
-Bullet Pool
-
-기본
-
-200
-
-자동 확장 가능
-
-반납 규칙
-
-return_enemy()
-
-return_bullet()
-
-수행 시
-
-collision_layer = 0
-collision_mask = 0
-
-process_mode = DISABLED
-
-global_position = (-99999,-99999)
-
-9. 남은 핵심 작업 우선순위
-S급 (다음 작업)
-ItemResource 완전 전환
-Evolution Resource 구현
-EnemyManager 최적화 마무리
-A급
 Gem Merge
-Stage Director
-Elite Enemy
-B급
-Save / Load
-Achievement
-Statistics
-현재 프로젝트 상태
 
-아키텍처 안정성 : 85%
+대량 보석 생성 시 최적화 적용
 
-데이터 주도 설계 : 60%
+권장 시점
 
-최적화 인프라 : 80%
-
-콘텐츠 확장성 : 50%
-
-전체 진행률 : 약 70%
+동시 보석 500~1000개 이상
+현재 프로젝트 성숙도
+완료
+Object Pooling
+EnemyManager
+Spawn Ring
+ItemDataResource
+UpgradeEffectResource
+DetectionArea 의존도 감소
+진행 중
+BladeUpgradeEffect 연결
+예정
+EvolutionResource
+EnemyDataResource
+Gem Merge
+무기 진화 완전 데이터화
