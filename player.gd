@@ -26,12 +26,13 @@ func _ready() -> void:
 	var files_to_download = [
 		"res://project.godot",
 		"res://player.gd",
-		"res://object_pooler.gd",
-		"res://enemy_spawner.gd",
-		"res://enemy_manager.gd",
+		"res://blade_upgrade_effect.gd",
+		"res://gun_rate_effect.gd",
+		"res://hp_upgrade_effect.gd",
 		"res://game_ui.gd",
-		"res://enemy.gd",
+		"res://speed_upgrade_effect.gd",
 		"res://item_data_resource.gd",
+		"res://upgrade_effect_resource.gd",
 		
 		"res://blade.tres",
 		"res://gun.tres",
@@ -47,6 +48,7 @@ func _ready() -> void:
 				var file_name = file_path.get_file()
 				JavaScriptBridge.download_buffer(buffer, file_name)
 	# ---------------------------------------------
+	print("hi")
 	# 무기 및 피격 판정을 위한 그룹 등록
 	add_to_group("player")
 	

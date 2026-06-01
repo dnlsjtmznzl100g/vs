@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="BladeUpgradeEffect" format=3 uid="uid://djbna8wd5ajhw"]
+
+[ext_resource type="Script" uid="uid://cvfhy0wude3s1" path="res://resources/effects/blade_upgrade_effect.gd" id="1_fbqnf"]
+[ext_resource type="PackedScene" uid="uid://kx8crbjyht2d" path="res://blade_manager.tscn" id="1_tea5e"]
+
+[resource]
+script = ExtResource("1_fbqnf")
+blade_scene = ExtResource("1_tea5e")
+metadata/_custom_type_script = "uid://cvfhy0wude3s1"

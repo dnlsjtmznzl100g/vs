@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemDataResource" format=3 uid="uid://b2ol1ck7rupcp"]
+
+[ext_resource type="Resource" uid="uid://djbna8wd5ajhw" path="res://resources/items/blade_effect.tres" id="1_e8woi"]
+[ext_resource type="Script" uid="uid://b7npplequqhvk" path="res://item_data_resource.gd" id="1_kexoq"]
+
+[resource]
+script = ExtResource("1_kexoq")
+item_id = "blade"
+display_name = "blade"
+item_type = "weapon"
+effect_resource = ExtResource("1_e8woi")
+metadata/_custom_type_script = "uid://b7npplequqhvk"
