@@ -44,6 +44,42 @@ items/
  ├ hp.tres
  └ speed.tres
 
+blade.tres
+item_id = blade
+display_name = 궤도 칼날
+item_type = weapon
+effect_type = blade
+max_level = 5
+
+gun.tres
+item_id = gun
+display_name = 자동 권총
+item_type = weapon
+effect_type = gun_rate
+max_level = 5
+
+hp.tres
+item_id = passive_hp
+display_name = 체력 증강
+item_type = passive
+effect_type = hp
+max_level = 5
+
+speed.tres
+item_id = passive_speed
+display_name = 가벼운 발걸음
+item_type = passive
+effect_type = speed
+max_level = 5
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+match effect tpye 제거
+item.tres
+ ↓
+effect_resource
+ ↓
+execute()
+
+
 [2]
 EvolutionResource
 ★★★★★
